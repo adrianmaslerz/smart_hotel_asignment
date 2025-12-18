@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ReservationsService } from './reservations.service';
+import { ReservationsRepository } from './reservations.repository';
 import { Reservation, ReservationSchema } from './reservation.schema';
 import { CommonModule } from '../common/common.module';
 
@@ -11,7 +12,7 @@ import { CommonModule } from '../common/common.module';
     ]),
     CommonModule,
   ],
-  providers: [ReservationsService],
+  providers: [ReservationsService, ReservationsRepository],
 })
 export class ReservationsModule {}
 
