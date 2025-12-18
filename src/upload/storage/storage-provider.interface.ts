@@ -1,7 +1,7 @@
-import {UploadResult} from "../upload-result.interface";
+import { UploadResult } from "../upload-result.interface";
 
-export interface StorageProvider {
-  uploadFile(
+export abstract class StorageProvider {
+  abstract uploadFile(
     file: Express.Multer.File,
     objectName: string,
   ): Promise<UploadResult>;

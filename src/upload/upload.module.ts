@@ -3,21 +3,19 @@ import { UploadService } from './upload.service';
 import { MinioStorageProvider } from './storage/minio-storage.provider';
 import { ConfigService } from '@nestjs/config';
 import { createMinioClient } from './storage/minio.factory';
-
-export const STORAGE_PROVIDER = 'StorageProvider';
+import { StorageProvider } from './storage/storage-provider.interface';
 
 @Module({
   providers: [
-    UploadService,
-    MinioStorageProvider,
     {
-      provide: STORAGE_PROVIDER,
+      provide: StorageProvider,
       useFactory: (configService: ConfigService) => {
         const minioClient = createMinioClient(configService);
         return new MinioStorageProvider(minioClient, configService);
       },
       inject: [ConfigService],
     },
+    UploadService,
   ],
   exports: [UploadService],
 })
