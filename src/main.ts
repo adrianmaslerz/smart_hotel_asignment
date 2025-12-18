@@ -7,9 +7,8 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Smart Hotel API')
-    .setDescription('API documentation for Smart Hotel management system')
+    .setDescription('API documentation for Smart Hotel')
     .setVersion('1.0')
-    .addTag('Hotel')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);

@@ -50,4 +50,4 @@ $ docker-compose logs -f app       # View app logs
 
 ## Key Technologies
 
-- NestJS, TypeScript, MongoDB, Redis, Bull, Swagger, Class Validator, XLSX, Socket.IO
+- NestJS, TypeScript, MongoDB, Redis, Bull

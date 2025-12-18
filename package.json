@@ -26,9 +26,7 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/mongoose": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
-    "@nestjs/platform-socket.io": "^11.0.0",
     "@nestjs/swagger": "^8.1.0",
-    "@nestjs/websockets": "^11.0.0",
     "bull": "^4.15.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -36,7 +34,6 @@
     "mongoose": "^8.9.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "socket.io": "^4.7.2",
     "swagger-ui-express": "^5.0.1",
     "xlsx": "^0.18.5"
   },
