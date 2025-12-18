@@ -35,7 +35,7 @@ services:
     restart: unless-stopped
 
   mongo:
-    image: mongo:7.0-alpine
+    image: mongo:latest
     container_name: smart_hotel_mongo
     ports:
       - "27017:27017"
@@ -51,13 +51,13 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 20s
 
   redis:
-    image: redis:7-alpine
+    image: redis:7
     container_name: smart_hotel_redis
     ports:
       - "6379:6379"
@@ -69,10 +69,10 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 20s
 
   minio:
     image: minio/minio:latest
@@ -93,7 +93,7 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
-      start_period: 10s
+      start_period: 30s
     command: minio server /data --console-address ":9001"
 
 networks:

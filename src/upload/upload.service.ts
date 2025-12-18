@@ -10,16 +10,3 @@ export class UploadService {
     return this.storageProvider.uploadFile(file, objectName);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
