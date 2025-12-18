@@ -19,7 +19,7 @@ import { UploadModule } from './upload/upload.module';
         uri: configService.get<string>('MONGODB_URI'),
       }),
     }),
-    TasksModule,
+    // TasksModule,
     UploadModule,
   ],
   controllers: [AppController],

@@ -3,7 +3,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { UploadService } from '../upload/upload.service';
-import { createUploadConfig } from '../upload/upload.config';
+import { createUploadConfig } from '../upload/upload.utils';
 import { MimeType } from '../upload/mime-type.enum';
 
 @ApiTags('Tasks')
