@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
 import { Readable } from 'stream';
@@ -12,6 +12,8 @@ type OnRowFailure = (rowIndex: number, errorMessage: string) => Promise<void>;
 
 @Injectable()
 export class ReservationsService {
+  private readonly logger = new Logger(ReservationsService.name);
+
   constructor(
     private xlsxService: XlsxService,
     private reservationsRepository: ReservationsRepository,
@@ -58,6 +60,7 @@ export class ReservationsService {
       });
     } catch (error) {
       const errorMessage = `Failed to map row to DTO: ${error instanceof Error ? error.message : String(error)}`;
+      this.logger.error(`Row ${rowIndex}: ${errorMessage}`);
       await onFailure(rowIndex, errorMessage);
       return null;
     }
@@ -71,6 +74,7 @@ export class ReservationsService {
     const errors = await validate(dto);
     if (errors.length > 0) {
       const errorMessage = `Validation failed: ${this.serializeValidationErrors(errors)}`;
+      this.logger.error(`Row ${rowIndex}: ${errorMessage}`);
       await onFailure(rowIndex, errorMessage);
       return false;
     }
@@ -84,8 +88,10 @@ export class ReservationsService {
   ): Promise<void> {
     try {
       await this.processReservation(dto);
+      this.logger.log(`Row ${rowIndex} processed`);
     } catch (error) {
       const errorMessage = `Processing failed: ${error instanceof Error ? error.message : String(error)}`;
+      this.logger.error(`Row ${rowIndex}: ${errorMessage}`);
       await onFailure(rowIndex, errorMessage);
     }
   }
@@ -94,23 +100,40 @@ export class ReservationsService {
     fileStream: Readable,
     onFailure: OnRowFailure,
   ): Promise<void> {
+    this.logger.log('Starting reservation file processing');
+    let processedRows = 0;
+    let skippedRows = 0;
+
     const onRow = async (
       row: Record<string, unknown>,
       rowIndex: number,
     ): Promise<void> => {
       const dto = await this.mapRowToDto(row, rowIndex, onFailure);
       if (!dto) {
+        skippedRows++;
         return;
       }
 
       const isValid = await this.validateDto(dto, rowIndex, onFailure);
       if (!isValid) {
+        skippedRows++;
         return;
       }
 
       await this.processRowData(dto, rowIndex, onFailure);
+      processedRows++;
     };
 
-    return this.xlsxService.parseXlsxStream(fileStream, onRow);
+    try {
+      await this.xlsxService.parseXlsxStream(fileStream, onRow);
+      this.logger.log(
+        `File processing completed. Processed: ${processedRows}, Skipped: ${skippedRows}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Error during file processing: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw error;
+    }
   }
 }

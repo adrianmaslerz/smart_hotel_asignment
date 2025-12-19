@@ -88,16 +88,16 @@ export class TaskProcessor {
 
       this.logger.log(`Task ${taskId} processed successfully`);
     } catch (error) {
-      this.logger.error(`Failed to process task job ${job.id}:`, error);
+      this.logger.error(
+        `Task ${taskId} failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
 
       const config = QUEUE_CONFIGS[QueueName.TASKS];
       const maxAttempts = config.defaultJobOptions.attempts ?? 1;
 
       if (job.attemptsMade >= maxAttempts) {
         await this.tasksRepository.updateStatus(taskId, TaskStatus.FAILED);
-        this.logger.warn(
-          `Task ${taskId} marked as FAILED after ${maxAttempts} attempts`,
-        );
+        this.logger.error(`Task ${taskId} marked as FAILED after ${maxAttempts} attempts`);
       }
 
       throw error;
