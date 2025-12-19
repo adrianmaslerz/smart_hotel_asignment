@@ -5,4 +5,3 @@ export interface UploadResult {
   mimetype: string;
   bucket: string;
 }
-

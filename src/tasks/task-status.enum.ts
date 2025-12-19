@@ -4,4 +4,3 @@ export enum TaskStatus {
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
 }
-

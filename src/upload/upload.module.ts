@@ -20,14 +20,3 @@ import { StorageProvider } from './storage/storage-provider.interface';
   exports: [UploadService],
 })
 export class UploadModule {}
-
-
-
-
-
-
-
-
-
-
-

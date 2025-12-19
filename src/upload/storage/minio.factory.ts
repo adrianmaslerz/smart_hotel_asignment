@@ -16,6 +16,3 @@ export function createMinioClient(configService: ConfigService): Minio.Client {
     secretKey,
   });
 }
-
-
-

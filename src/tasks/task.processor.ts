@@ -97,7 +97,9 @@ export class TaskProcessor {
 
       if (job.attemptsMade >= maxAttempts) {
         await this.tasksRepository.updateStatus(taskId, TaskStatus.FAILED);
-        this.logger.error(`Task ${taskId} marked as FAILED after ${maxAttempts} attempts`);
+        this.logger.error(
+          `Task ${taskId} marked as FAILED after ${maxAttempts} attempts`,
+        );
       }
 
       throw error;

@@ -4,4 +4,3 @@ export interface UploadConfigOptions {
   allowedMimeTypes?: MimeType[];
   maxFileSize?: number;
 }
-

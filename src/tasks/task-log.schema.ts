@@ -20,4 +20,3 @@ export class TaskLog {
 }
 
 export const TaskLogSchema = SchemaFactory.createForClass(TaskLog);
-

@@ -16,4 +16,3 @@ import { CommonModule } from '../common/common.module';
   exports: [ReservationsService],
 })
 export class ReservationsModule {}
-

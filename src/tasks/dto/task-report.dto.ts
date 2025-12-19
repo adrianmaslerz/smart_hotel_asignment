@@ -14,4 +14,3 @@ export class TaskReportDto {
   })
   entry: TaskLogDto[];
 }
-
