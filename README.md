@@ -31,6 +31,16 @@ $ npm run test:cov     # Coverage report
 $ npm run test:e2e     # E2E tests
 ```
 
+## Generate Sample Data
+
+```bash
+$ cd test-data
+$ node generate-reservations.js 10    # Generate 10 records (default)
+$ node generate-reservations.js 100   # Generate 100 records
+```
+
+Generated XLSX file: `test-data/reservations.xlsx`
+
 ## Development
 
 ```bash

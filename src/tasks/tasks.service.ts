@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { TasksRepository } from './tasks.repository';
 import { TaskLogRepository } from './task-log.repository';
 import { UploadService } from '../upload/upload.service';
@@ -21,6 +25,10 @@ export class TasksService {
   ) {}
 
   async addTask(file: Express.Multer.File): Promise<CreateTaskResponseDto> {
+    if (!file) {
+      throw new BadRequestException('File is required');
+    }
+
     const uploadResult = await this.uploadService.handleFileUpload(file);
 
     const taskData: Partial<Task> = {
@@ -57,10 +65,7 @@ export class TasksService {
     }
 
     const [generalLogs, entryLogs] = await Promise.all([
-      this.taskLogRepository.findByTaskIdAndType(
-        taskId,
-        TaskLogType.GENERAL,
-      ),
+      this.taskLogRepository.findByTaskIdAndType(taskId, TaskLogType.GENERAL),
       this.taskLogRepository.findByTaskIdAndType(taskId, TaskLogType.ENTRY),
     ]);
 

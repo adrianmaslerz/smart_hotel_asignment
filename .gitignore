@@ -66,3 +66,8 @@ minio_data/
 redis_data/
 mongo_data/
 # Docker volumes and local data
+
+# test-data folder
+/test-data/*
+!/test-data/generate-reservations.js
+
