@@ -9,6 +9,14 @@ interface XlsxRow {
 
 @Injectable()
 export class XlsxService {
+  private parseHeaderValue(value: unknown): string {
+    return value === null || value === undefined
+      ? ''
+      : typeof value === 'string'
+        ? value
+        : String(Number(value));
+  }
+
   private extractHeaders(worksheet: Worksheet): string[] {
     const headers: string[] = [];
     let firstRow = true;
@@ -17,7 +25,7 @@ export class XlsxService {
       if (firstRow) {
         const values = Array.isArray(row.values) ? row.values : [];
         values.forEach((value: unknown) => {
-          headers.push(JSON.stringify(value ?? ''));
+          headers.push(this.parseHeaderValue(value));
         });
         firstRow = false;
       }
@@ -26,8 +34,8 @@ export class XlsxService {
     return headers;
   }
 
-  private getDataRows(worksheet: Worksheet): Array<{ rowIndex: number; values: unknown[] }> {
-    const rows: Array<{ rowIndex: number; values: unknown[] }> = [];
+  private getDataRows(worksheet: Worksheet): XlsxRow[] {
+    const rows: XlsxRow[] = [];
     let rowIndex = 0;
 
     worksheet.eachRow((row) => {
@@ -104,4 +112,3 @@ export class XlsxService {
     });
   }
 }
-

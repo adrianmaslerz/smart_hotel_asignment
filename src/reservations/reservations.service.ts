@@ -55,8 +55,18 @@ export class ReservationsService {
     onFailure: OnRowFailure,
   ): Promise<CreateReservationDto | null> {
     try {
-      return plainToInstance(CreateReservationDto, row, {
+      const mappedRow = {
+        reservationId: row.reservation_id ?? row.reservationId,
+        guestName: row.guest_name ?? row.guestName,
+        status: row.status,
+        checkInDate: row.check_in_date ?? row.checkInDate,
+        checkOutDate: row.check_out_date ?? row.checkOutDate,
+      };
+
+      return plainToInstance(CreateReservationDto, mappedRow, {
         enableImplicitConversion: true,
+        excludeExtraneousValues: false,
+        exposeDefaultValues: true,
       });
     } catch (error) {
       const errorMessage = `Failed to map row to DTO: ${error instanceof Error ? error.message : String(error)}`;

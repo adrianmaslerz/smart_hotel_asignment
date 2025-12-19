@@ -65,8 +65,8 @@ export class TasksService {
     }
 
     const [generalLogs, entryLogs] = await Promise.all([
-      this.taskLogRepository.findByTaskIdAndType(taskId, TaskLogType.GENERAL),
-      this.taskLogRepository.findByTaskIdAndType(taskId, TaskLogType.ENTRY),
+      this.taskLogRepository.findByTaskIdAndType(task._id),
+      this.taskLogRepository.findByTaskIdAndType(task._id, TaskLogType.ENTRY),
     ]);
 
     return {

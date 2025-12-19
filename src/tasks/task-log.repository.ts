@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { TaskLog, TaskLogDocument } from './task-log.schema';
 import { TaskLogType } from './task-log-type.enum';
 
@@ -17,8 +17,8 @@ export class TaskLogRepository {
   }
 
   async findByTaskIdAndType(
-    taskId: string,
-    type: TaskLogType,
+    taskId: Types.ObjectId,
+    type: TaskLogType = TaskLogType.GENERAL,
   ): Promise<TaskLogDocument[]> {
     return this.taskLogModel
       .find({ taskId, type })
@@ -26,4 +26,3 @@ export class TaskLogRepository {
       .exec();
   }
 }
-
