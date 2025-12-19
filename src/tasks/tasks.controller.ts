@@ -12,6 +12,7 @@ import { ApiTags, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
 import { CreateTaskResponseDto } from './dto/create-task-response.dto';
 import { TaskStatusDto } from './dto/task-status.dto';
+import { TaskReportDto } from './dto/task-report.dto';
 import { createUploadConfig } from '../upload/upload.utils';
 import { MimeType } from '../upload/mime-type.enum';
 
@@ -63,5 +64,19 @@ export class TasksController {
   })
   async getTaskStatus(@Param('taskId') taskId: string) {
     return await this.tasksService.getTaskStatus(taskId);
+  }
+
+  @Get('report/:taskId')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Task report',
+    type: TaskReportDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Task not found',
+  })
+  async getTaskReport(@Param('taskId') taskId: string) {
+    return await this.tasksService.getTaskReport(taskId);
   }
 }

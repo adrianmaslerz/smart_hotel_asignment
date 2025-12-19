@@ -6,13 +6,13 @@ export type TaskLogDocument = HydratedDocument<TaskLog>;
 
 @Schema({ timestamps: true })
 export class TaskLog {
-  @Prop({ type: Types.ObjectId, ref: 'Task', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'Task', index: true })
   taskId: Types.ObjectId;
 
   @Prop({ required: true })
   message: string;
 
-  @Prop({ enum: TaskLogType, default: TaskLogType.GENERAL })
+  @Prop({ enum: TaskLogType, default: TaskLogType.GENERAL, index: true })
   type: TaskLogType;
 
   @Prop({ default: Date.now })

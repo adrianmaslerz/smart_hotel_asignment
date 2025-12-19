@@ -1,16 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { TasksRepository } from './tasks.repository';
+import { TaskLogRepository } from './task-log.repository';
 import { UploadService } from '../upload/upload.service';
 import { QueueService } from '../queue/queue.service';
 import { QueueName } from '../queue/queue-name.enum';
+import { TaskLogType } from './task-log-type.enum';
 import { Task } from './task.schema';
 import { CreateTaskResponseDto } from './dto/create-task-response.dto';
+import { TaskReportDto } from './dto/task-report.dto';
+import { TaskLogDto } from './dto/task-log.dto';
 import { TaskJobData } from './task-job.interface';
 
 @Injectable()
 export class TasksService {
   constructor(
     private readonly tasksRepository: TasksRepository,
+    private readonly taskLogRepository: TaskLogRepository,
     private readonly uploadService: UploadService,
     private readonly queueService: QueueService,
   ) {}
@@ -42,6 +47,26 @@ export class TasksService {
     }
     return {
       status: task.status,
+    };
+  }
+
+  async getTaskReport(taskId: string): Promise<TaskReportDto> {
+    const task = await this.tasksRepository.getById(taskId);
+    if (!task) {
+      throw new NotFoundException(`Task ${taskId} not found`);
+    }
+
+    const [generalLogs, entryLogs] = await Promise.all([
+      this.taskLogRepository.findByTaskIdAndType(
+        taskId,
+        TaskLogType.GENERAL,
+      ),
+      this.taskLogRepository.findByTaskIdAndType(taskId, TaskLogType.ENTRY),
+    ]);
+
+    return {
+      general: generalLogs.map((log) => TaskLogDto.fromDocument(log)),
+      entry: entryLogs.map((log) => TaskLogDto.fromDocument(log)),
     };
   }
 }
