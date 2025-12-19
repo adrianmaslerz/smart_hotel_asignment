@@ -1,8 +1,11 @@
-import { UploadResult } from "../upload-result.interface";
+import { Readable } from 'stream';
+import { UploadResult } from '../upload-result.interface';
 
 export abstract class StorageProvider {
   abstract uploadFile(
     file: Express.Multer.File,
     objectName: string,
   ): Promise<UploadResult>;
+
+  abstract getFileStream(filePath: string): Promise<Readable>;
 }

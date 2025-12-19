@@ -40,4 +40,8 @@ export class MinioStorageProvider implements StorageProvider {
       bucket: this.bucketName,
     };
   }
+
+  async getFileStream(filePath: string): Promise<Readable> {
+    return this.minioClient.getObject(this.bucketName, filePath);
+  }
 }

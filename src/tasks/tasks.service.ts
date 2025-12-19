@@ -26,7 +26,6 @@ export class TasksService {
 
     const jobData: TaskJobData = {
       taskId: task._id.toString(),
-      filePath: task.filePath,
     };
 
     await this.queueService.addJob(QueueName.TASKS, jobData);
