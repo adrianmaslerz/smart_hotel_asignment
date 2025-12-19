@@ -9,7 +9,7 @@ export class Task {
   @Prop()
   filePath: string;
 
-  @Prop({ enum: TaskStatus, default: TaskStatus.PENDING })
+  @Prop({ type: String, enum: TaskStatus, default: TaskStatus.PENDING })
   status: TaskStatus;
 
   @Prop({ default: Date.now })

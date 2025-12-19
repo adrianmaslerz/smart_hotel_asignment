@@ -12,7 +12,12 @@ export class TaskLog {
   @Prop({ required: true })
   message: string;
 
-  @Prop({ enum: TaskLogType, default: TaskLogType.GENERAL, index: true })
+  @Prop({
+    type: String,
+    enum: TaskLogType,
+    default: TaskLogType.GENERAL,
+    index: true,
+  })
   type: TaskLogType;
 
   @Prop({ default: Date.now })

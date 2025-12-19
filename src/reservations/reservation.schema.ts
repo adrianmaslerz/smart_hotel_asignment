@@ -12,7 +12,11 @@ export class Reservation {
   @Prop()
   guestName: string;
 
-  @Prop({ enum: ReservationStatus, default: ReservationStatus.PENDING })
+  @Prop({
+    type: String,
+    enum: ReservationStatus,
+    default: ReservationStatus.PENDING,
+  })
   status: ReservationStatus;
 
   @Prop()
