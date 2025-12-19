@@ -1,20 +1,27 @@
-import { Controller, Post, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 import { TasksService } from './tasks.service';
-import { UploadService } from '../upload/upload.service';
+import { TaskResponseDto } from './dto/task-response.dto';
 import { createUploadConfig } from '../upload/upload.utils';
 import { MimeType } from '../upload/mime-type.enum';
 
 @ApiTags('Tasks')
 @Controller('tasks')
 export class TasksController {
-  constructor(
-    private readonly tasksService: TasksService,
-    private readonly uploadService: UploadService,
-  ) {}
+  constructor(private readonly tasksService: TasksService) {}
 
   @Post('upload')
+  @ApiResponse({
+    status: 201,
+    description: 'Task successfully created',
+    type: TaskResponseDto,
+  })
   @UseInterceptors(
     FileInterceptor(
       'file',
@@ -36,15 +43,7 @@ export class TasksController {
       },
     },
   })
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return this.uploadService.handleFileUpload(file);
+  async addTask(@UploadedFile() file: Express.Multer.File) {
+    return await this.tasksService.addTask(file);
   }
 }
-
-
-
-
-
-
-
-

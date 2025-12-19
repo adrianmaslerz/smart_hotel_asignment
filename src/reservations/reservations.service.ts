@@ -5,6 +5,7 @@ import { Readable } from 'stream';
 import { XlsxService } from '../common/xlsx.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { ReservationsRepository } from './reservations.repository';
+import { Reservation } from './reservation.schema';
 import { ReservationStatus } from './reservation-status.enum';
 
 @Injectable()
@@ -23,7 +24,14 @@ export class ReservationsService {
     ) {
       await this.reservationsRepository.updateStatus(reservationId, status);
     } else {
-      await this.reservationsRepository.upsert(dto);
+      const reservationData: Partial<Reservation> = {
+        reservationId: dto.reservationId,
+        guestName: dto.guestName,
+        status: dto.status,
+        checkInDate: new Date(dto.checkInDate),
+        checkOutDate: new Date(dto.checkOutDate),
+      };
+      await this.reservationsRepository.upsert(reservationId, reservationData);
     }
   }
 
@@ -32,7 +40,6 @@ export class ReservationsService {
       const dto = plainToInstance(CreateReservationDto, row, {
         enableImplicitConversion: true,
       });
-
       const errors = await validate(dto);
       if (errors.length > 0) {
         throw new BadRequestException(
@@ -46,7 +53,3 @@ export class ReservationsService {
     return this.xlsxService.parseXlsxStream(fileStream, onRow);
   }
 }
-
-
-
-
