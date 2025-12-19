@@ -13,6 +13,7 @@ import { CommonModule } from '../common/common.module';
     CommonModule,
   ],
   providers: [ReservationsService, ReservationsRepository],
+  exports: [ReservationsService],
 })
 export class ReservationsModule {}
 

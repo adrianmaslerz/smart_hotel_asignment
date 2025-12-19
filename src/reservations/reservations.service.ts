@@ -1,12 +1,14 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
+import { validate, ValidationError } from 'class-validator';
 import { Readable } from 'stream';
 import { XlsxService } from '../common/xlsx.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { ReservationsRepository } from './reservations.repository';
 import { Reservation } from './reservation.schema';
 import { ReservationStatus } from './reservation-status.enum';
+
+type OnRowFailure = (rowIndex: number, errorMessage: string) => Promise<void>;
 
 @Injectable()
 export class ReservationsService {
@@ -35,19 +37,78 @@ export class ReservationsService {
     }
   }
 
-  async processReservations(fileStream: Readable): Promise<void> {
-    const onRow = async (row: Record<string, unknown>): Promise<void> => {
-      const dto = plainToInstance(CreateReservationDto, row, {
+  private serializeValidationErrors(errors: ValidationError[]): string {
+    const messages = errors.map((error) => {
+      const constraints = error.constraints
+        ? Object.values(error.constraints).join('; ')
+        : 'Unknown validation error';
+      return `${error.property}: ${constraints}`;
+    });
+    return messages.join(' | ');
+  }
+
+  private async mapRowToDto(
+    row: Record<string, unknown>,
+    rowIndex: number,
+    onFailure: OnRowFailure,
+  ): Promise<CreateReservationDto | null> {
+    try {
+      return plainToInstance(CreateReservationDto, row, {
         enableImplicitConversion: true,
       });
-      const errors = await validate(dto);
-      if (errors.length > 0) {
-        throw new BadRequestException(
-          `Validation failed for row: ${JSON.stringify(errors)}`,
-        );
+    } catch (error) {
+      const errorMessage = `Failed to map row to DTO: ${error instanceof Error ? error.message : String(error)}`;
+      await onFailure(rowIndex, errorMessage);
+      return null;
+    }
+  }
+
+  private async validateDto(
+    dto: CreateReservationDto,
+    rowIndex: number,
+    onFailure: OnRowFailure,
+  ): Promise<boolean> {
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      const errorMessage = `Validation failed: ${this.serializeValidationErrors(errors)}`;
+      await onFailure(rowIndex, errorMessage);
+      return false;
+    }
+    return true;
+  }
+
+  private async processRowData(
+    dto: CreateReservationDto,
+    rowIndex: number,
+    onFailure: OnRowFailure,
+  ): Promise<void> {
+    try {
+      await this.processReservation(dto);
+    } catch (error) {
+      const errorMessage = `Processing failed: ${error instanceof Error ? error.message : String(error)}`;
+      await onFailure(rowIndex, errorMessage);
+    }
+  }
+
+  async processReservations(
+    fileStream: Readable,
+    onFailure: OnRowFailure,
+  ): Promise<void> {
+    const onRow = async (
+      row: Record<string, unknown>,
+      rowIndex: number,
+    ): Promise<void> => {
+      const dto = await this.mapRowToDto(row, rowIndex, onFailure);
+      if (!dto) {
+        return;
       }
 
-      await this.processReservation(dto);
+      const isValid = await this.validateDto(dto, rowIndex, onFailure);
+      if (!isValid) {
+        return;
+      }
+
+      await this.processRowData(dto, rowIndex, onFailure);
     };
 
     return this.xlsxService.parseXlsxStream(fileStream, onRow);

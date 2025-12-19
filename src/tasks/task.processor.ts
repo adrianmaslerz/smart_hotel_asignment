@@ -1,13 +1,17 @@
 import { Process, Processor } from '@nestjs/bull';
 import type { Job } from 'bull';
-import { Logger, BadRequestException } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
+import { Readable } from 'stream';
+import { Types } from 'mongoose';
 import { QueueName } from '../queue/queue-name.enum';
 import { QUEUE_CONFIGS } from '../queue/queue.config';
 import { TaskJobData } from './task-job.interface';
 import { TasksRepository } from './tasks.repository';
+import { TaskLogRepository } from './task-log.repository';
 import { UploadService } from '../upload/upload.service';
 import { ReservationsService } from '../reservations/reservations.service';
 import { TaskStatus } from './task-status.enum';
+import { TaskLogType } from './task-log-type.enum';
 
 @Processor(QueueName.TASKS)
 export class TaskProcessor {
@@ -15,9 +19,35 @@ export class TaskProcessor {
 
   constructor(
     private readonly tasksRepository: TasksRepository,
+    private readonly taskLogRepository: TaskLogRepository,
     private readonly uploadService: UploadService,
     private readonly reservationsService: ReservationsService,
   ) {}
+
+  private async processReservationsWithLogging(
+    fileStream: Readable,
+    taskId: Types.ObjectId,
+  ): Promise<void> {
+    const onFailure = async (rowIndex: number, errorMessage: string) => {
+      await this.taskLogRepository.create({
+        taskId,
+        message: `Row ${rowIndex}: ${errorMessage}`,
+        type: TaskLogType.ENTRY,
+      });
+    };
+
+    try {
+      await this.reservationsService.processReservations(fileStream, onFailure);
+    } catch (error) {
+      const errorMessage = `Error processing reservations: ${error instanceof Error ? error.message : String(error)}`;
+      await this.taskLogRepository.create({
+        taskId,
+        message: errorMessage,
+        type: TaskLogType.GENERAL,
+      });
+      throw error;
+    }
+  }
 
   @Process()
   async processTask(job: Job<TaskJobData>): Promise<void> {
@@ -29,14 +59,20 @@ export class TaskProcessor {
 
       const task = await this.tasksRepository.getById(taskId);
       if (!task) {
-        throw new BadRequestException(`Task ${taskId} not found`);
+        throw new Error(`Task ${taskId} not found`);
       }
 
       if (task.status !== TaskStatus.PENDING) {
-        throw new BadRequestException(
-          `Task ${taskId} is not in PENDING status`,
-        );
+        const errorMessage = `Task ${taskId} is not in PENDING status`;
+        await this.taskLogRepository.create({
+          taskId: task._id,
+          message: errorMessage,
+          type: TaskLogType.GENERAL,
+        });
+        throw new Error(errorMessage);
       }
+
+      await this.tasksRepository.updateStatus(taskId, TaskStatus.IN_PROGRESS);
 
       await job.progress(30);
 
@@ -44,7 +80,7 @@ export class TaskProcessor {
 
       await job.progress(50);
 
-      await this.reservationsService.processReservations(fileStream);
+      await this.processReservationsWithLogging(fileStream, task._id);
 
       await job.progress(100);
 

@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Readable } from 'stream';
 import { Workbook, Worksheet } from 'exceljs';
 
+interface XlsxRow {
+  rowIndex: number;
+  values: unknown[];
+}
+
 @Injectable()
 export class XlsxService {
   private extractHeaders(worksheet: Worksheet): string[] {
@@ -21,15 +26,15 @@ export class XlsxService {
     return headers;
   }
 
-  private getDataRows(worksheet: Worksheet): (unknown[] | undefined)[] {
-    const rows: (unknown[] | undefined)[] = [];
+  private getDataRows(worksheet: Worksheet): Array<{ rowIndex: number; values: unknown[] }> {
+    const rows: Array<{ rowIndex: number; values: unknown[] }> = [];
     let rowIndex = 0;
 
     worksheet.eachRow((row) => {
       rowIndex++;
       if (rowIndex > 1) {
         const values = Array.isArray(row.values) ? row.values : [];
-        rows.push(values);
+        rows.push({ rowIndex, values });
       }
     });
 
@@ -50,22 +55,22 @@ export class XlsxService {
   }
 
   private async processRows<T>(
-    rows: (unknown[] | undefined)[],
+    rows: XlsxRow[],
     headers: string[],
-    onRow: (row: T) => Promise<void> | void,
+    onRow: (row: T, rowIndex: number) => Promise<void> | void,
   ): Promise<void> {
-    for (const values of rows) {
+    for (const { rowIndex, values } of rows) {
       if (!values) {
         continue;
       }
       const rowData = this.mapRowData(values, headers);
-      await Promise.resolve(onRow(rowData as T));
+      await Promise.resolve(onRow(rowData as T, rowIndex));
     }
   }
 
   async parseXlsxStream<T>(
     fileStream: Readable,
-    onRow: (row: T) => Promise<void> | void,
+    onRow: (row: T, rowIndex: number) => Promise<void> | void,
   ): Promise<void> {
     const workbook = new Workbook();
 

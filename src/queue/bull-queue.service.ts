@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import * as Bull from 'bull';
 import { QueueService } from './queue.service';
@@ -16,7 +16,7 @@ export class BullQueueService extends QueueService {
     const config = QUEUE_CONFIGS[queueName];
 
     if (!config) {
-      throw new BadRequestException(`Queue config for ${queueName} not found`);
+      throw new Error(`Queue config for ${queueName} not found`);
     }
 
     await queue.add(data, config.defaultJobOptions);
@@ -26,6 +26,6 @@ export class BullQueueService extends QueueService {
     if (queueName === QueueName.TASKS) {
       return this.tasksQueue;
     }
-    throw new BadRequestException(`Queue ${queueName as string} not found`);
+    throw new Error(`Queue ${queueName as string} not found`);
   }
 }
