@@ -6,4 +6,3 @@ import { XlsxService } from './xlsx.service';
   exports: [XlsxService],
 })
 export class CommonModule {}
-
