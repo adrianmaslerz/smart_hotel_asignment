@@ -91,7 +91,9 @@ describe('TaskProcessor', () => {
 
       await processor.processTask(mockJob);
 
-      expect(mockTasksRepository.getById).toHaveBeenCalledWith(taskId.toString());
+      expect(mockTasksRepository.getById).toHaveBeenCalledWith(
+        taskId.toString(),
+      );
       expect(mockTasksRepository.updateStatus).toHaveBeenNthCalledWith(
         1,
         taskId.toString(),
@@ -225,7 +227,10 @@ describe('TaskProcessor', () => {
 
       mockReservationsService.processReservations.mockResolvedValue(undefined);
 
-      await (processor as any).processReservationsWithLogging(mockStream, taskId);
+      await (processor as any).processReservationsWithLogging(
+        mockStream,
+        taskId,
+      );
 
       expect(mockReservationsService.processReservations).toHaveBeenCalledWith(
         mockStream,
@@ -245,7 +250,10 @@ describe('TaskProcessor', () => {
       );
       mockTaskLogRepository.create.mockResolvedValue(undefined as any);
 
-      await (processor as any).processReservationsWithLogging(mockStream, taskId);
+      await (processor as any).processReservationsWithLogging(
+        mockStream,
+        taskId,
+      );
 
       await onFailureCallback(5, 'Invalid email');
 
@@ -307,4 +315,3 @@ describe('TaskProcessor', () => {
     });
   });
 });
-
